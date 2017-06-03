@@ -23,9 +23,9 @@ OKCoin韭菜收割机
 
 BTC: 3QFn1qfZMhMQ4FhgENR7fha3T8ZVw1bEeU
 
-1.yum install java
-2.wget https://dl.bintray.com/groovy/maven/apache-groovy-binary-2.5.0-alpha-1.zip
-3.unzip apache-groovy-binary-2.5.0-alpha-1.zip
-4.mv apache-groovy-binary-2.5.0-alpha-1 /usr/local/
-5.PATH=$PATH:/usr/local/apache-groovy-binary-2.5.0-alpha-1/bin
-6.groovy -D cfg=conf/example.cfg trading_okcoin.groovy
+1. yum install java
+2. wget https://dl.bintray.com/groovy/maven/apache-groovy-binary-2.5.0-alpha-1.zip
+3. unzip apache-groovy-binary-2.5.0-alpha-1.zip
+4. mv apache-groovy-binary-2.5.0-alpha-1 /usr/local/
+5. PATH=$PATH:/usr/local/apache-groovy-binary-2.5.0-alpha-1/bin
+6. groovy -D cfg=conf/example.cfg trading_okcoin.groovy
