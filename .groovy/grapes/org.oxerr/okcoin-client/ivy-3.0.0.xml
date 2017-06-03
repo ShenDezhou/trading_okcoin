@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
+	<info organisation="org.oxerr"
+		module="okcoin-client"
+		revision="3.0.0"
+		status="release"
+		publication="20160601183025"
+	>
+		<license name="The BSD 2-Clause License" url="http://opensource.org/licenses/bsd-license.php" />
+		<description homepage="https://oxerr.org/okcoin-client">
+		Client for &lt;a href=&quot;https://www.okcoin.cn&quot;>OKCoin&lt;/a>.
+		</description>
+		<m:properties__mina.version>1.1.7</m:properties__mina.version>
+		<m:properties__project.build.sourceEncoding>UTF-8</m:properties__project.build.sourceEncoding>
+		<m:properties__jackson.version>2.7.4</m:properties__jackson.version>
+		<m:properties__quickfixj.version>1.5.3-bd</m:properties__quickfixj.version>
+		<m:properties__project.reporting.outputEncoding>UTF-8</m:properties__project.reporting.outputEncoding>
+		<m:dependency.management__javax.json__javax.json-api__version>1.0</m:dependency.management__javax.json__javax.json-api__version>
+		<m:dependency.management__javax.websocket__javax.websocket-client-api__version>1.1</m:dependency.management__javax.websocket__javax.websocket-client-api__version>
+		<m:dependency.management__org.apache.commons__commons-lang3__version>3.4</m:dependency.management__org.apache.commons__commons-lang3__version>
+		<m:dependency.management__org.apache.httpcomponents__httpclient__version>4.5.2</m:dependency.management__org.apache.httpcomponents__httpclient__version>
+		<m:dependency.management__org.apache.mina__mina-core__version>1.1.7</m:dependency.management__org.apache.mina__mina-core__version>
+		<m:dependency.management__org.apache.mina__mina-filter-ssl__version>1.1.7</m:dependency.management__org.apache.mina__mina-filter-ssl__version>
+		<m:dependency.management__org.glassfish__javax.json__version>1.0.4</m:dependency.management__org.glassfish__javax.json__version>
+		<m:dependency.management__org.glassfish.tyrus__tyrus-container-grizzly-client__version>1.12</m:dependency.management__org.glassfish.tyrus__tyrus-container-grizzly-client__version>
+		<m:dependency.management__org.slf4j__slf4j-api__version>1.7.21</m:dependency.management__org.slf4j__slf4j-api__version>
+		<m:dependency.management__net.sourceforge.nekohtml__nekohtml__version>1.9.22</m:dependency.management__net.sourceforge.nekohtml__nekohtml__version>
+		<m:dependency.management__com.fasterxml.jackson.core__jackson-core__version>2.7.4</m:dependency.management__com.fasterxml.jackson.core__jackson-core__version>
+		<m:dependency.management__com.fasterxml.jackson.core__jackson-databind__version>2.7.4</m:dependency.management__com.fasterxml.jackson.core__jackson-databind__version>
+		<m:dependency.management__org.knowm.xchange__xchange-core__version>4.0.0</m:dependency.management__org.knowm.xchange__xchange-core__version>
+		<m:dependency.management__ch.qos.logback__logback-classic__version>1.1.7</m:dependency.management__ch.qos.logback__logback-classic__version>
+		<m:dependency.management__commons-io__commons-io__version>2.5</m:dependency.management__commons-io__commons-io__version>
+		<m:dependency.management__junit__junit__version>4.12</m:dependency.management__junit__junit__version>
+		<m:dependency.management__quickfixj__quickfixj-core__version>1.5.3-bd</m:dependency.management__quickfixj__quickfixj-core__version>
+		<m:dependency.management__quickfixj__quickfixj-msg-fix44__version>1.5.3-bd</m:dependency.management__quickfixj__quickfixj-msg-fix44__version>
+		<m:maven.plugins>org.apache.maven.plugins__maven-compiler-plugin__null</m:maven.plugins>
+	</info>
+	<configurations>
+		<conf name="default" visibility="public" description="runtime dependencies and master artifact can be used with this conf" extends="runtime,master"/>
+		<conf name="master" visibility="public" description="contains only the artifact published by this module itself, with no transitive dependencies"/>
+		<conf name="compile" visibility="public" description="this is the default scope, used if none is specified. Compile dependencies are available in all classpaths."/>
+		<conf name="provided" visibility="public" description="this is much like compile, but indicates you expect the JDK or a container to provide it. It is only available on the compilation classpath, and is not transitive."/>
+		<conf name="runtime" visibility="public" description="this scope indicates that the dependency is not required for compilation, but is for execution. It is in the runtime and test classpaths, but not the compile classpath." extends="compile"/>
+		<conf name="test" visibility="private" description="this scope indicates that the dependency is not required for normal use of the application, and is only available for the test compilation and execution phases." extends="runtime"/>
+		<conf name="system" visibility="public" description="this scope is similar to provided except that you have to provide the JAR which contains it explicitly. The artifact is always available and is not looked up in a repository."/>
+		<conf name="sources" visibility="public" description="this configuration contains the source artifact of this module, if any."/>
+		<conf name="javadoc" visibility="public" description="this configuration contains the javadoc artifact of this module, if any."/>
+		<conf name="optional" visibility="public" description="contains all optional dependencies"/>
+	</configurations>
+	<publications>
+	</publications>
+	<dependencies>
+		<dependency org="junit" name="junit" rev="4.12" force="true" conf="test->runtime(*),master(*)"/>
+		<override org="javax.json" module="javax.json-api" matcher="exact" rev="1.0"/>
+		<override org="javax.websocket" module="javax.websocket-client-api" matcher="exact" rev="1.1"/>
+		<override org="org.apache.commons" module="commons-lang3" matcher="exact" rev="3.4"/>
+		<override org="org.apache.httpcomponents" module="httpclient" matcher="exact" rev="4.5.2"/>
+		<override org="org.apache.mina" module="mina-core" matcher="exact" rev="1.1.7"/>
+		<override org="org.apache.mina" module="mina-filter-ssl" matcher="exact" rev="1.1.7"/>
+		<override org="org.glassfish" module="javax.json" matcher="exact" rev="1.0.4"/>
+		<override org="org.glassfish.tyrus" module="tyrus-container-grizzly-client" matcher="exact" rev="1.12"/>
+		<override org="org.slf4j" module="slf4j-api" matcher="exact" rev="1.7.21"/>
+		<override org="net.sourceforge.nekohtml" module="nekohtml" matcher="exact" rev="1.9.22"/>
+		<override org="com.fasterxml.jackson.core" module="jackson-core" matcher="exact" rev="2.7.4"/>
+		<override org="com.fasterxml.jackson.core" module="jackson-databind" matcher="exact" rev="2.7.4"/>
+		<override org="org.knowm.xchange" module="xchange-core" matcher="exact" rev="4.0.0"/>
+		<override org="ch.qos.logback" module="logback-classic" matcher="exact" rev="1.1.7"/>
+		<override org="commons-io" module="commons-io" matcher="exact" rev="2.5"/>
+		<override org="junit" module="junit" matcher="exact" rev="4.12"/>
+		<override org="quickfixj" module="quickfixj-core" matcher="exact" rev="1.5.3-bd"/>
+		<override org="quickfixj" module="quickfixj-msg-fix44" matcher="exact" rev="1.5.3-bd"/>
+	</dependencies>
+</ivy-module>

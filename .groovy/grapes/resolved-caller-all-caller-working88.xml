@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0">
+	<info organisation="caller"
+		module="all-caller"
+		revision="working88"
+		status="integration"
+		publication="20170603221819"
+		default="true"
+	/>
+	<configurations>
+		<conf name="default" visibility="public"/>
+	</configurations>
+	<publications>
+	</publications>
+	<dependencies>
+		<dependency org="org.slf4j" name="slf4j-log4j12" rev="1.7.21" force="true" conf="default->default">
+			<artifact name="slf4j-log4j12" type="jar" ext="jar"/>
+		</dependency>
+		<dependency org="org.oxerr" name="okcoin-client-rest" rev="3.0.0" force="true" conf="default->default">
+			<artifact name="okcoin-client-rest" type="jar" ext="jar"/>
+		</dependency>
+	</dependencies>
+</ivy-module>
