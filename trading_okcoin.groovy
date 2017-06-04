@@ -95,15 +95,15 @@ class Trading {
                 ignoreException {
 
                     def orders = (
-                        p < 0.48 ? {
-                            cny -= 300.0
+                        p < 0.38 ? {
+                            cny -= 200.0
                             trader2.batchTrade("btc_cny", Type.BUY, [
                                 new OrderData(orderBook.bids[0].limitPrice + 0.00, 0.010G, Type.BUY),
                                 new OrderData(orderBook.bids[0].limitPrice + 0.01, 0.010G, Type.BUY),
                             ] as OrderData[])
                         }() :
-                        p > 0.52 ? {
-                            btc -= 0.030
+                        p > 0.62 ? {
+                            btc -= 0.020
                             trader2.batchTrade("btc_cny", Type.SELL, [
                                 new OrderData(orderBook.asks[0].limitPrice - 0.00, 0.010G, Type.SELL),
                                 new OrderData(orderBook.asks[0].limitPrice - 0.01, 0.010G, Type.SELL),
@@ -186,7 +186,6 @@ class Trading {
                 }
 
 
-                tradeAmount = 1.1f
                 if (vol < cfg.burst.threshold.vol) tradeAmount *= vol / cfg.burst.threshold.vol
                 if (numTick < 5)  tradeAmount *= 0.80
                 if (numTick < 10) tradeAmount *= 0.80
@@ -199,11 +198,11 @@ class Trading {
                 if (orderBook.asks[0].limitPrice - orderBook.bids[0].limitPrice > burstPrice * 3) tradeAmount *= 0.90
                 if (orderBook.asks[0].limitPrice - orderBook.bids[0].limitPrice > burstPrice * 4) tradeAmount *= 0.90
 
-                if (tradeAmount >= 0.1) {  
+                if (tradeAmount >= 0.05) {  
                     def tradePrice = bull ? bidPrice : askPrice
                     trading = true
 
-                    while (tradeAmount >= 0.1) {
+                    while (tradeAmount >= 0.05) {
                         def orderId = bull 
                             ? trader1.trade("btc_cny", Type.BUY,  bidPrice, tradeAmount).orderId
                             : trader1.trade("btc_cny", Type.SELL, askPrice, tradeAmount).orderId
@@ -213,7 +212,7 @@ class Trading {
                             trader1.cancelOrder("btc_cny", orderId)
                         }
 
-                        
+                       
                         def order
                         while (order == null || order.status == Status.CANCEL_REQUEST_IN_PROCESS) {
                             order = trader1.getOrder("btc_cny", orderId).orders[0]
@@ -224,7 +223,7 @@ class Trading {
                                 String.format("%.3f", tradeAmount),
                                 String.format("%.3f", order.dealAmount))
                         tradeAmount -= order.dealAmount
-                        tradeAmount -= 0.01
+                        tradeAmount -= 0.005
                         tradeAmount *= 0.98  
 
                         if (order.status == Status.CANCELLED) {
