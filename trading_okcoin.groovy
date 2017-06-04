@@ -44,48 +44,43 @@ class Trading {
         def accountExchange = createExchange(cfg.account.apikey, cfg.account.seckey) as OKCoinExchange
         def tradeExchange = createExchange(cfg.trade.apikey, cfg.trade.seckey) as OKCoinExchange
         def account = accountExchange.pollingAccountService as OKCoinAccountService
-        println account
         def market = accountExchange.pollingMarketDataService as OKCoinMarketDataService
         def trader1 = tradeExchange.pollingTradeService as OKCoinTradeService
         def trader2 = tradeExchange.pollingTradeService as OKCoinTradeService
         def threadExecutor = Executors.newCachedThreadPool() as ThreadPoolExecutor
         def trading = false
 
-        // 更新历史交易数据，用于计算成交量
         def trades
         def lastTradeId
         def vol = 0
         def updateTrades = {
             trades = market.getTrades("btc_cny", null) as Trade[]
-            println trades
+            logger.info("TRADES:",trades)
             vol = 0.7 * vol + 0.3 * trades.sum(0.0) {
                 it.tid > lastTradeId ? it.amount : 0
-            }  // 本次tick交易量 = 上次tick交易量*0.7 + 本次tick期间实际发生的交易量*0.3，用于平滑和减少噪音
+            }  
             lastTradeId = trades[-1].tid
         }
         updateTrades()
 
-        // 更新盘口数据，用于计算价格
+
         def orderBook
         def prices = [trades[-1].price] * 15
         def bidPrice
         def askPrice
         def updateOrderBook = {
             orderBook = market.getOrderBook(CurrencyPair.BTC_CNY, 2)
-            println orderBook
-            // 计算提单价格
+            logger.info("ORDERBOOK:",orderBook)
             bidPrice = orderBook.bids[0].limitPrice * 0.618 + orderBook.asks[0].limitPrice * 0.382 + 0.01
             askPrice = orderBook.bids[0].limitPrice * 0.382 + orderBook.asks[0].limitPrice * 0.618 - 0.01
 
-            // 更新时间价格序列
-            //  本次tick价格 = (买1+卖1)*0.35 + (买2+卖2) * 0.15
             prices = prices[1 .. -1] + [(
                     (orderBook.bids[0].limitPrice + orderBook.asks[0].limitPrice) / 2 * 0.7 +
                     (orderBook.bids[1].limitPrice + orderBook.asks[1].limitPrice) / 2 * 0.3)]
         }
         updateOrderBook()
 
-        // 更新仓位
+
         def userInfo
         def btc
         def cny
@@ -98,9 +93,7 @@ class Trading {
                 }
                 def t = System.currentTimeMillis()
                 ignoreException {
-                    // 这里有一个仓位平衡的辅助策略
-                    //  仓位平衡策略是在仓位偏离50%时，通过不断提交小单来使仓位回归50%的策略，
-                    //  这个辅助策略可以有效减少趋势策略中趋势反转+大滑点带来的大幅回撤
+
                     def orders = (
                         p < 0.48 ? {
                             cny -= 300.0
@@ -133,9 +126,6 @@ class Trading {
             }
         }
 
-        // 定时扫描、取消失效的旧订单
-        //  策略执行中难免会有不能成交、取消失败遗留下来的旧订单，
-        //  定时取消掉这些订单防止占用资金
         threadExecutor.execute {
             while (true) {
                 ignoreException {
@@ -143,6 +133,7 @@ class Trading {
                         .grep {it.timestamp.time - System.currentTimeMillis() < -10000}  // orders before 10s
                         .each {
                             trader2.cancelOrder(it.id)
+			    logger.error("CANCELORDER:",it)
                         }
                 }
                 sleep 60000
@@ -164,13 +155,13 @@ class Trading {
                 updateTrades()
                 updateOrderBook()
                 
-                logger.info("tick: ${ts0-ts1}, {}, net: {}, total: {}, p: {} - {}/{}, v: {}",
+                logger.warn("tick: ${ts0-ts1}, {}, net: {}, total: {}, p: {} - {}/{}, v: {}",
                         String.format("%.2f", prices[-1]),
-                        String.format("%.2f", 0.0f),//userInfo.info.funds.asset.net),
-                        String.format("%.2f", 0.0f),//userInfo.info.funds.asset.total),
+                        String.format("%.2f", userInfo.info.funds.asset.net),
+                        String.format("%.2f", userInfo.info.funds.asset.total),
                         String.format("%.2f", p),
-                        String.format("%.3f", 0.0f),//btc),
-                        String.format("%.2f", 0.0f),//cny),
+                        String.format("%.3f", btc),
+                        String.format("%.2f", cny),
                         String.format("%.2f", vol))
 
                 def burstPrice = prices[-1] * cfg.burst.threshold.pct
@@ -178,7 +169,7 @@ class Trading {
                 def bear = false
                 def tradeAmount = 0
 
-                // 趋势策略，价格出现方向上的突破时开始交易
+
                 if (numTick > 2 && (
                             prices[-1] - prices[-6 .. -2].max() > +burstPrice ||
                             prices[-1] - prices[-6 .. -3].max() > +burstPrice && prices[-1] > prices[-2]
@@ -194,11 +185,7 @@ class Trading {
                     tradeAmount = btc
                 }
 
-                // 下单力度计算
-                //  1. 小成交量的趋势成功率比较低，减小力度
-                //  2. 过度频繁交易有害，减小力度
-                //  3. 短时价格波动过大，减小力度
-                //  4. 盘口价差过大，减少力度
+
                 tradeAmount = 1.1f
                 if (vol < cfg.burst.threshold.vol) tradeAmount *= vol / cfg.burst.threshold.vol
                 if (numTick < 5)  tradeAmount *= 0.80
@@ -212,37 +199,36 @@ class Trading {
                 if (orderBook.asks[0].limitPrice - orderBook.bids[0].limitPrice > burstPrice * 3) tradeAmount *= 0.90
                 if (orderBook.asks[0].limitPrice - orderBook.bids[0].limitPrice > burstPrice * 4) tradeAmount *= 0.90
 
-                if (tradeAmount >= 0.1) {  // 最后下单量小于0.1BTC的就不操作了
+                if (tradeAmount >= 0.1) {  
                     def tradePrice = bull ? bidPrice : askPrice
-                    println tradePrice
                     trading = true
 
                     while (tradeAmount >= 0.1) {
-                        def orderId = bull  // 
+                        def orderId = bull 
                             ? trader1.trade("btc_cny", Type.BUY,  bidPrice, tradeAmount).orderId
                             : trader1.trade("btc_cny", Type.SELL, askPrice, tradeAmount).orderId
 
-                        ignoreException {  // 等待200ms后取消挂单
+                        ignoreException {  
                             sleep 200
                             trader1.cancelOrder("btc_cny", orderId)
                         }
 
-                        // 获取订单状态
+                        
                         def order
                         while (order == null || order.status == Status.CANCEL_REQUEST_IN_PROCESS) {
                             order = trader1.getOrder("btc_cny", orderId).orders[0]
                         }
-                        logger.warn("TRADING: {} price: {}, amount: {}, dealAmount: {}",
+                        logger.error("TRADING: {} price: {}, amount: {}, dealAmount: {}",
                                 bull ? '++':'--',
                                 String.format("%.2f", bull ? bidPrice : askPrice),
                                 String.format("%.3f", tradeAmount),
                                 String.format("%.3f", order.dealAmount))
                         tradeAmount -= order.dealAmount
                         tradeAmount -= 0.01
-                        tradeAmount *= 0.98  // 每轮循环都少量削减力度
+                        tradeAmount *= 0.98  
 
                         if (order.status == Status.CANCELLED) {
-                            updateOrderBook()  // 更新盘口，更新后的价格高于提单价格也需要削减力度
+                            updateOrderBook()  
                             while (bull && bidPrice - tradePrice > +0.1) {
                                 tradeAmount *= 0.99
                                 tradePrice += 0.1
@@ -256,11 +242,11 @@ class Trading {
                     numTick = 0
                 }
             } catch (InterruptedException e) {
-                logger.error("interrupted: ", e)
+                logger.info("interrupted: ", e)
                 break
 
             } catch (all) {
-                logger.error("unhandled exception: ", all)
+                logger.info("unhandled exception: ", all)
                 continue
             }
         }
