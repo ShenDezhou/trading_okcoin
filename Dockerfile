@@ -14,6 +14,7 @@ ADD groovy-2.5.0-alpha-1/ /usr/local/
 #RUN ln -s /usr/local/groovy-2.5.0-alpha-1/bin/grape /usr/bin/grape
 RUN mkdir -p  /root/.groovy/grapes
 ADD .groovy/grapes/ /root/.groovy/grapes/
-RUN rm -f  /etc/localtime && ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 CMD ["/root/entrypoint.sh"]
  
