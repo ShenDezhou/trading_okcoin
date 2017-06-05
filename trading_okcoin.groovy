@@ -237,7 +237,7 @@ class Trading {
                                 bull ? '++':'--',
                                 String.format("%.2f", bull ? bidPrice : askPrice),
                                 String.format("%.3f", tradeAmount),
-                                String.format("%.8f", order.dealAmount))
+                                String.format("%.3f", order.dealAmount))
                         tradeAmount -= order.dealAmount
                         tradeAmount -= 0.01
                         tradeAmount *= 0.98  
