@@ -139,6 +139,8 @@ class Trading {
                 while (System.currentTimeMillis() - t < 500) {
                     sleep 5
                 }
+		//sleep 86400000
+		if (p > cfg.p.low && p < cfg.p.high) sleep 86400000
             }
         }
 
@@ -170,7 +172,7 @@ class Trading {
             try {
                 updateTrades()
                 updateOrderBook()
-                
+ 
                 logger.warn("tick: ${ts0-ts1}, {}, net: {}, total: {}, p: {} - {}/{}, v: {}",
                         String.format("%.2f", prices[-1]),
                         String.format("%.2f", userInfo.info.funds.asset.net),
@@ -237,7 +239,7 @@ class Trading {
                                 bull ? '++':'--',
                                 String.format("%.2f", bull ? bidPrice : askPrice),
                                 String.format("%.3f", tradeAmount),
-                                String.format("%.3f", order.dealAmount))
+                                String.format("%.8f", order.dealAmount))
                         tradeAmount -= order.dealAmount
                         tradeAmount -= 0.01
                         tradeAmount *= 0.98  
