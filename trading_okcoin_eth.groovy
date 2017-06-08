@@ -98,7 +98,7 @@ class Trading {
 
                     def orders = (
                         p < cfg.p.low ? {
-                            cny -= orderBook.bids[0].limitPrice * 0.010
+                            cny -= orderBook.bids[0].limitPrice * 0.010G
                             trader2.batchTrade("eth_cny", Type.BUY, [
                                 new OrderData(orderBook.bids[0].limitPrice + 0.00, 0.010G, Type.BUY),
                                 //new OrderData(orderBook.bids[0].limitPrice + 0.01, 0.010G, Type.BUY),
@@ -111,7 +111,7 @@ class Trading {
                                 String.format("%.3f", 0.010G))
                         }() :
                         p > cfg.p.high ? {
-                            eth -= 0.010
+                            eth -= 0.010G
                             trader2.batchTrade("eth_cny", Type.SELL, [
                                 new OrderData(orderBook.asks[0].limitPrice - 0.00, 0.010G, Type.SELL),
                                 //new OrderData(orderBook.asks[0].limitPrice - 0.01, 0.010G, Type.SELL),
@@ -128,8 +128,8 @@ class Trading {
                     userInfo = account.userInfo
                     eth = userInfo.info.funds.free.eth
                     cny = userInfo.info.funds.free.cny
-                    p = eth * prices[-1] / ( eth * prices[-1] + cny)
-
+                    p = eth * prices[-1] / (eth * prices[-1] + cny)
+		logger.error("{} {} {} {}",userInfo,eth,cny,p)
                     if (orders != null) {
                         sleep 400
                         trader2.cancelOrder("eth_cny", orders.orderInfo.collect {it.orderId} as long[])
@@ -140,7 +140,7 @@ class Trading {
                     sleep 5
                 }
 		//sleep 86400000
-		if (p > cfg.p.low && p < cfg.p.high) sleep 86400000
+		sleep 60000
             }
         }
 
@@ -172,7 +172,12 @@ class Trading {
             try {
                 updateTrades()
                 updateOrderBook()
- 
+ 		if (eth == null) {
+ 		    userInfo = account.userInfo
+                    eth = userInfo.info.funds.free.eth
+                    cny = userInfo.info.funds.free.cny
+		}
+			
                 logger.warn("tick: ${ts0-ts1}, {}, net: {}, total: {}, p: {} - {}/{}, v: {}",
                         String.format("%.2f", prices[-1]),
                         String.format("%.2f", userInfo.info.funds.asset.net),
@@ -239,7 +244,7 @@ class Trading {
                                 bull ? '++':'--',
                                 String.format("%.2f", bull ? bidPrice : askPrice),
                                 String.format("%.3f", tradeAmount),
-                                String.format("%.8f", order.dealAmount))
+                                String.format("%.3f", order.dealAmount))
                         tradeAmount -= order.dealAmount
                         tradeAmount -= 0.01
                         tradeAmount *= 0.98  
