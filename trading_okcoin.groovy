@@ -140,7 +140,8 @@ class Trading {
                     sleep 5
                 }
 		//sleep 86400000
-		if (p > cfg.p.low && p < cfg.p.high) sleep 86400000
+		//if (p > cfg.p.low && p < cfg.p.high) sleep 86400000
+		sleep 60000
             }
         }
 
@@ -172,7 +173,11 @@ class Trading {
             try {
                 updateTrades()
                 updateOrderBook()
- 
+ 		if (btc!=userInfo.info.funds.free.btc) {
+		    userInfo = account.userInfo
+                    btc = userInfo.info.funds.free.btc
+                    cny = userInfo.info.funds.free.cny
+		}
                 logger.warn("tick: ${ts0-ts1}, {}, net: {}, total: {}, p: {} - {}/{}, v: {}",
                         String.format("%.2f", prices[-1]),
                         String.format("%.2f", userInfo.info.funds.asset.net),
