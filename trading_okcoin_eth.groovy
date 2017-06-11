@@ -77,7 +77,7 @@ class Trading {
                     (orderBook.bids[0].limitPrice + orderBook.asks[0].limitPrice) / 2 * 0.7 +
                     (orderBook.bids[1].limitPrice + orderBook.asks[1].limitPrice) / 2 * 0.2 +
                     (orderBook.bids[2].limitPrice + orderBook.asks[2].limitPrice) / 2 * 0.1)]
-            //logger.info("updateOrderBook:price:{}", prices)
+            logger.info("updateOrderBook:price:{}", prices)
         }
         updateOrderBook()
 
@@ -97,29 +97,29 @@ class Trading {
 
                     def orders = (
                         p < cfg.p.low ? {
-                            cny -= orderBook.bids[0].limitPrice * 0.30G
+                            cny -= orderBook.bids[0].limitPrice * 0.10G
                             logger.error("BatchTrade: {} price: {}, amount: {}, dealAmount: {}",
                                 true ? '++':'--',
                                 String.format("%.2f", orderBook.bids[0].limitPrice),
-                                String.format("%.3f", 0.030G),
-                                String.format("%.3f", 0.030G))
+                                String.format("%.3f", 0.010G),
+                                String.format("%.3f", 0.010G))
                             trader2.batchTrade("eth_cny", Type.BUY, [
-                                new OrderData(orderBook.bids[0].limitPrice + 0.00, 0.10G, Type.BUY),
-                                new OrderData(orderBook.bids[0].limitPrice + 0.01, 0.10G, Type.BUY),
-                                new OrderData(orderBook.bids[0].limitPrice + 0.02, 0.10G, Type.BUY),
+                                new OrderData(orderBook.bids[0].limitPrice + 0.00, 0.040G, Type.BUY),
+                                new OrderData(orderBook.bids[0].limitPrice + 0.01, 0.030G, Type.BUY),
+                                new OrderData(orderBook.bids[0].limitPrice + 0.02, 0.030G, Type.BUY),
                             ] as OrderData[])
                         }() :
                         p > cfg.p.high ? {
-                            eth -= 0.30G
+                            eth -= 0.10G
                             logger.error("BatchTrade: {} price: {}, amount: {}, dealAmount: {}",
                                 false ? '++':'--',
                                 String.format("%.2f", orderBook.asks[0].limitPrice),
-                                String.format("%.3f", 0.030G),
-                                String.format("%.3f", 0.030G))
+                                String.format("%.3f", 0.010G),
+                                String.format("%.3f", 0.010G))
                             trader2.batchTrade("eth_cny", Type.SELL, [
-                                new OrderData(orderBook.asks[0].limitPrice - 0.00, 0.10G, Type.SELL),
-                                new OrderData(orderBook.asks[0].limitPrice - 0.01, 0.10G, Type.SELL),
-                                new OrderData(orderBook.asks[0].limitPrice - 0.02, 0.10G, Type.SELL),
+                                new OrderData(orderBook.asks[0].limitPrice - 0.00, 0.040G, Type.SELL),
+                                new OrderData(orderBook.asks[0].limitPrice - 0.01, 0.030G, Type.SELL),
+                                new OrderData(orderBook.asks[0].limitPrice - 0.02, 0.030G, Type.SELL),
                             ] as OrderData[])
                         }() :
                         null)
