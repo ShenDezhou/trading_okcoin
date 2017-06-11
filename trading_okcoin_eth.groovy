@@ -98,11 +98,11 @@ class Trading {
 
                     def orders = (
                         p < cfg.p.low ? {
-                            cny -= orderBook.bids[0].limitPrice * 0.010G
+                            cny -= orderBook.bids[0].limitPrice * 0.30G
                             trader2.batchTrade("eth_cny", Type.BUY, [
-                                new OrderData(orderBook.bids[0].limitPrice + 0.00, 0.010G, Type.BUY),
-                                //new OrderData(orderBook.bids[0].limitPrice + 0.01, 0.010G, Type.BUY),
-				//new OrderData(orderBook.bids[0].limitPrice + 0.02, 0.010G, Type.BUY),
+                                new OrderData(orderBook.bids[0].limitPrice + 0.00, 0.10G, Type.BUY),
+                                new OrderData(orderBook.bids[0].limitPrice + 0.01, 0.10G, Type.BUY),
+				new OrderData(orderBook.bids[0].limitPrice + 0.02, 0.10G, Type.BUY),
                             ] as OrderData[])
 			    logger.error("BatchTrade: {} price: {}, amount: {}, dealAmount: {}",
                                 true ? '++':'--',
@@ -111,11 +111,11 @@ class Trading {
                                 String.format("%.3f", 0.010G))
                         }() :
                         p > cfg.p.high ? {
-                            eth -= 0.010G
+                            eth -= 0.30G
                             trader2.batchTrade("eth_cny", Type.SELL, [
-                                new OrderData(orderBook.asks[0].limitPrice - 0.00, 0.010G, Type.SELL),
-                                //new OrderData(orderBook.asks[0].limitPrice - 0.01, 0.010G, Type.SELL),
-                                //new OrderData(orderBook.asks[0].limitPrice - 0.02, 0.010G, Type.SELL),
+                                new OrderData(orderBook.asks[0].limitPrice - 0.00, 0.10G, Type.SELL),
+                                new OrderData(orderBook.asks[0].limitPrice - 0.01, 0.10G, Type.SELL),
+                                new OrderData(orderBook.asks[0].limitPrice - 0.02, 0.10G, Type.SELL),
                             ] as OrderData[])
               		    logger.error("BatchTrade: {} price: {}, amount: {}, dealAmount: {}",
                                 false ? '++':'--',
@@ -140,7 +140,7 @@ class Trading {
                     sleep 5
                 }
 		//sleep 86400000
-		sleep 60000
+		sleep 59000
             }
         }
 
@@ -148,7 +148,7 @@ class Trading {
             while (true) {
                 ignoreException {
                     trader2.openOrders.openOrders
-                        .grep {it.timestamp.time - System.currentTimeMillis() < -10000}  // orders before 10s
+                        .grep {it.timestamp.time - System.currentTimeMillis() < -60000}  // orders before 10s
                         .each {
                             trader2.cancelOrder(it.id)
 			    logger.error("CANCELORDER:{}",it)
@@ -178,7 +178,7 @@ class Trading {
                     cny = userInfo.info.funds.free.cny
 		}
 			
-                logger.warn("tick: ${ts0-ts1}, {}, net: {}, total: {}, p: {} - {}/{}, v: {}",
+                logger.warn("tick: ${ts0-ts1}, {}, net: {}, total: {}, p: {}[${cfg.p.low}::${cfg.p.high}] - {}/{}, v: {}",
                         String.format("%.2f", prices[-1]),
                         String.format("%.2f", userInfo.info.funds.asset.net),
                         String.format("%.2f", userInfo.info.funds.asset.total),
