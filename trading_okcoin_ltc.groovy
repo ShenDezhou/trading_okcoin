@@ -97,36 +97,36 @@ class Trading {
 
                     def orders = (
                         p < cfg.p.low ? {
-                            cny -= orderBook.bids[0].limitPrice * 0.50
-                           logger.error("BatchTrade: {} price: {}, amount: {}, dealAmount: {}",
+                            cny -= orderBook.bids[0].limitPrice * 1.00
+                            logger.error("BatchTrade: {} price: {}, amount: {}, dealAmount: {}",
                                 true ? '++':'--',
                                 String.format("%.2f", orderBook.bids[0].limitPrice),
-                                String.format("%.3f", 0.5G),
-                                String.format("%.3f", 0.5G))
+                                String.format("%.3f", 1.0G),
+                                String.format("%.3f", 1.0G))
                             trader2.batchTrade("ltc_cny", Type.BUY, [
-                                new OrderData(orderBook.bids[0].limitPrice + 0.00, 0.200G, Type.BUY),
-                                new OrderData(orderBook.bids[0].limitPrice + 0.01, 0.150G, Type.BUY),
-                                new OrderData(orderBook.bids[0].limitPrice + 0.02, 0.150G, Type.BUY),
+                                new OrderData(orderBook.bids[0].limitPrice + 0.00, 1.00G, Type.BUY),
+                               //new OrderData(orderBook.bids[0].limitPrice + 0.01, 0.150G, Type.BUY),
+                               //new OrderData(orderBook.bids[0].limitPrice + 0.02, 0.150G, Type.BUY),
                             ] as OrderData[])
                         }() :
                         p > cfg.p.high ? {
-                            ltc -= 0.500
+                            ltc -= 1.00
                             logger.error("BatchTrade: {} price: {}, amount: {}, dealAmount: {}",
                                 false ? '++':'--',
                                 String.format("%.2f", orderBook.asks[0].limitPrice),
-                                String.format("%.3f", 0.5G),
-                                String.format("%.3f", 0.5G))
+                                String.format("%.3f", 1.0G),
+                                String.format("%.3f", 1.0G))
                              trader2.batchTrade("ltc_cny", Type.SELL, [
-                                new OrderData(orderBook.asks[0].limitPrice - 0.00, 0.200G, Type.SELL),
-                                new OrderData(orderBook.asks[0].limitPrice - 0.01, 0.150G, Type.SELL),
-                                new OrderData(orderBook.asks[0].limitPrice - 0.02, 0.150G, Type.SELL),
+                                new OrderData(orderBook.asks[0].limitPrice - 0.00, 1.00G, Type.SELL),
+                                //new OrderData(orderBook.asks[0].limitPrice - 0.01, 0.150G, Type.SELL),
+                                //new OrderData(orderBook.asks[0].limitPrice - 0.02, 0.150G, Type.SELL),
                             ] as OrderData[])
                         }() :
                         null)
                     userInfo = account.userInfo
                     ltc = userInfo.info.funds.free.ltc
                     cny = userInfo.info.funds.free.cny
-                    p = ltc * prices[-1] / (ltc * prices[-1] + cny)
+                    p = ltc * prices[-1] / userInfo.info.funds.asset.total
 
                     if (orders != null) {
                         sleep 400
@@ -169,7 +169,11 @@ class Trading {
             try {
                 updateTrades()
                 updateOrderBook()
-
+                if (userInfo == null) {
+                    userInfo = account.userInfo
+                    ltc = userInfo.info.funds.free.ltc
+                    cny = userInfo.info.funds.free.cny
+                }
                 logger.warn("tick: ${ts0-ts1}, price:{}, net: {}, total: {}, p: {}[${cfg.p.low}~${cfg.p.high}] - {}/{}, v: {}",
                         String.format("%.2f", prices[-1]),
                         String.format("%.2f", userInfo.info.funds.asset.net),
@@ -190,14 +194,14 @@ class Trading {
                             prices[-1] - prices[-6 .. -3].max() > +burstPrice && prices[-1] > prices[-2]
                         )) {
                     bull = true
-                    tradeAmount = cny / bidPrice * 0.99
+                    tradeAmount = cny /10 / bidPrice * 0.99
                 }
                 if (numTick > 2 && (
                             prices[-1] - prices[-6 .. -2].min() < -burstPrice ||
                             prices[-1] - prices[-6 .. -3].min() < -burstPrice && prices[-1] < prices[-2]
                         )) {
                     bear = true
-                    tradeAmount = ltc
+                    tradeAmount = ltc /10
                 }
 
 
@@ -217,7 +221,7 @@ class Trading {
                     def tradePrice = bull ? bidPrice : askPrice
                     trading = true
 
-                    while (tradeAmount >= 1.0) {
+                    while (tradeAmount >= 1.00) {
                         def orderId = bull
                             ? trader1.trade("ltc_cny", Type.BUY,  bidPrice, tradeAmount).orderId
                             : trader1.trade("ltc_cny", Type.SELL, askPrice, tradeAmount).orderId
