@@ -126,7 +126,7 @@ class Trading {
                     userInfo = account.userInfo
                     eth = userInfo.info.funds.free.eth
                     cny = userInfo.info.funds.free.cny
-                    p = eth * prices[-1] / (eth * prices[-1] + cny)
+                    p = eth * prices[-1] / userInfo.info.funds.asset.total
                     if (orders != null) {
                         sleep 400
                         trader2.cancelOrder("eth_cny", orders.orderInfo.collect {it.orderId} as long[])
@@ -195,14 +195,14 @@ class Trading {
                             prices[-1] - prices[-6 .. -3].max() > +burstPrice && prices[-1] > prices[-2]
                         )) {
                     bull = true
-                    tradeAmount = cny / bidPrice * 0.99
+                    tradeAmount = cny / 10 / bidPrice * 0.99
                 }
                 if (numTick > 2 && (
                             prices[-1] - prices[-6 .. -2].min() < -burstPrice ||
                             prices[-1] - prices[-6 .. -3].min() < -burstPrice && prices[-1] < prices[-2]
                         )) {
                     bear = true
-                    tradeAmount = eth
+                    tradeAmount = eth / 10
                 }
 
 
